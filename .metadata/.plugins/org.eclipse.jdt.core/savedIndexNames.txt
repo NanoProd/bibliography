@@ -1,0 +1,3 @@
+INDEX VERSION 1.131+C:\Users\Joshua-James\Desktop\concordia\journal\.metadata\.plugins\org.eclipse.jdt.core
+1869967683.index
+2196199803.index
