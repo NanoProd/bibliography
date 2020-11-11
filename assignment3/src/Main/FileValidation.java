@@ -5,106 +5,62 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.FileWriter;
 
 public class FileValidation {
     // attributes
     private int quantityOfArticles;
-    private String digit;
-    private String author;
-    private String journal;
-    private String title;
-    private String year;
-    private String volume;
-    private String number;
-    private String pages;
-    private String keywords;
-    private String doi;
-    private String issn;
-    private String month;
-
+    private Article[] articles;
     private String pathFv = "";
+    private boolean isValidFile;
+    static String tempField;
+    static int invalidF;
+    static int validF;
+
 
     // constructor
     public FileValidation(String pathFv) {
         this.pathFv = pathFv;
-    }
-
-    // accessor method
-    public String getPathFv() {
-        return pathFv;
-    }
-
-    // setter methods
-    public void setQuantityOfArtricles(int quantityOfArticles) {
-        this.quantityOfArticles = quantityOfArticles;
-    }
-
-    public void setDigit(String digit) {
-        this.digit = digit;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public void setJournal(String journal) {
-        this.journal = journal;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public void setYear(String year) {
-        this.year = year;
-    }
-
-    public void setVolume(String volume) {
-        this.volume = volume;
-    }
-
-    public void setNumber(String number) {
-        this.number = number;
-    }
-
-    public void setPages(String pages) {
-        this.pages = pages;
-    }
-
-    public void setKeywords(String keywords) {
-        this.keywords = keywords;
-    }
-
-    public void setDoi(String doi) {
-        this.doi = doi;
-    }
-
-    public void setIssn(String issn) {
-        this.issn = issn;
-    }
-
-    public void setMonth(String month) {
-        this.month = month;
+        articles = new Article[20];
+        quantityOfArticles = 0;
+        isValidFile = false;
     }
 
     // Default constructor
     public FileValidation() {
         quantityOfArticles = 0;
-        digit = "";
-        author = "";
-        journal = "";
-        title = "";
-        year = "";
-        volume = "";
-        number = "";
-        pages = "";
-        keywords = "";
-        doi = "";
-        issn = "";
-        month = "";
+        articles = new Article[20];
+        isValidFile = false;
     }
 
+    // setter method
+    public void setQuantityOfArticles(int quantityOfArticles) {
+        this.quantityOfArticles = quantityOfArticles;
+    }
+
+    // Getter method
+    public boolean getValidFile(){
+        return isValidFile;
+    }
+    public Article[] getArticles() {
+        return articles;
+    }
+
+    public Article getSpecificArticle(int index) {
+        return articles[index];
+    }
+
+    public String getPathFv() {
+        return pathFv;
+    }
+
+    public int getQuantityOfArticles() {
+        return quantityOfArticles;
+    }
+    
     // method to find field name
     public static String lookForField(String line) {
         // turn string into char array
@@ -143,7 +99,8 @@ public class FileValidation {
                 indexLast = j;
             }
             if ((indexLast - indexFirst) == 1) {
-                throw new FileInvalidException();
+                throw new FileInvalidException(
+                        "Error: input file cannot be parsed due to missing information ( " + tempField + " ) is empty");
             }
 
         }
@@ -156,80 +113,157 @@ public class FileValidation {
     }
 
     // assign values from a file
-    public void assignValues(){
-        try 
-        {
+    public void assignValues() {
+        try {
             BufferedReader inputStream = new BufferedReader(new FileReader(this.pathFv));
             String line;
-            while((line = inputStream.readLine()) != null){
+            boolean valid = true;
+            while (valid) {
                 line = inputStream.readLine();
-                if(line.equalsIgnoreCase("@ARTICLE{")){
+                if (line == null) {
+                    break;
+                }
+                if (line.contains("ARTICLE")) {
+                    Article aObject = new Article();
+                    aObject.setPosition(this.quantityOfArticles + 1);
+                    this.articles[this.quantityOfArticles] = aObject;
+                    while (!(line.equalsIgnoreCase("}"))) {
+                        line = inputStream.readLine();
+                        if (line.isEmpty()) {
+                            continue;
+                        } else if (line.contains("=")) {
+                            String field;
+                            field = lookForField(line);
+                            tempField = field;
+                            String information;
+                            information = getInformation(line);
+                            switch (field) {
+                                case "author":
+                                    articles[this.quantityOfArticles].setAuthor(information);
+                                    break;
+                                case "journal":
+                                    articles[this.quantityOfArticles].setJournal(information);
+                                    break;
+                                case "title":
+                                    articles[this.quantityOfArticles].setTitle(information);
+                                    break;
+                                case "year":
+                                    articles[this.quantityOfArticles].setYear(information);
+                                    break;
+                                case "volume":
+                                    articles[this.quantityOfArticles].setVolume(information);
+                                    break;
+                                case "number":
+                                    articles[this.quantityOfArticles].setNumber(information);
+                                    break;
+                                case "pages":
+                                    articles[this.quantityOfArticles].setPages(information);
+                                    break;
+                                case "keywords":
+                                    articles[this.quantityOfArticles].setKeywords(information);
+                                    break;
+                                case "doi":
+                                    articles[this.quantityOfArticles].setDoi(information);
+                                    break;
+                                case "ISSN":
+                                    articles[this.quantityOfArticles].setIssn(information);
+                                    break;
+                                case "month":
+                                    articles[this.quantityOfArticles].setMonth(information);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        } else {
+                            if (line.contains("}")) {
+                                continue;
+                            }
+                            articles[this.quantityOfArticles].setDigit(line);
+                        }
+                    }
                     this.quantityOfArticles++;
-                   while(!(line.equalsIgnoreCase("}"))){
-                       line = inputStream.readLine();
-                       if(line.isEmpty()){
-                           continue;
-                       } else if(line.contains("=")){
-                           String field;
-                           field =  lookForField(line);
-                           String information;
-                           information = getInformation(line);
-                           switch(field){
-                               case "author":
-                                   this.setAuthor(information);
-                                   break;
-                               case "journal":
-                                   this.setJournal(information);
-                                   break;
-                               case "title":
-                                   this.setTitle(information);
-                                   break;
-                               case "year":
-                                   this.setYear(information);
-                                   break;
-                               case "volume":
-                                   this.setVolume(information);
-                                   break;
-                               case "number":
-                                   this.setNumber(information);
-                                   break;
-                               case "pages":
-                                   this.setPages(information);
-                                   break;
-                               case "keywords":
-                                   this.setKeywords(information);
-                                   break;
-                               case "doi":
-                                   this.setDoi(information);
-                                   break;
-                               case "issn":
-                                   this.setIssn(information);
-                                   break;
-                               case "month":
-                                   this.setMonth(information);
-                                   break;
-                               default:
-                                   break;
-                           }
-                       } else {
-                           this.setDigit(line);
-                       }
-                   }
+                    
                 }
 
-           }
+            }
+            inputStream.close();
+            validF++;
+            this.isValidFile = true;
 
-
-
-           inputStream.close();
-        }
-        catch(FileInvalidException e){
+        } catch (FileInvalidException e) {
+            invalidF++;
+            System.out.print("\nError: Detected Empty Field! \n============================\n\nProblem detected with input file: " + this.getPathFv() + 
+                            "\nFile is Invalid: Field \"" + tempField + "\" Processing stopped at this point. Other empty fields may be present as well!\n"  );
+            
+        } catch (IOException e) {
             System.out.println(e.toString());
-            System.exit(0);
+            
+        }
+    }
+
+    public String toString() {
+        return "\nQuantity of Articles: " + this.getQuantityOfArticles() + "\nFile Path: " + this.getPathFv();
+    }
+
+    public void printArticles() {
+        for (int i = 0; i < this.quantityOfArticles; i++) {
+            System.out.println(this.articles[i].toString());
+        }
+    }
+
+    public void printIeee(String fileName) {
+        PrintWriter os = null;
+        try {
+            os = new PrintWriter(new FileWriter(fileName));
+            for (int i = 0; i < this.quantityOfArticles; i++) {
+                os.println(articles[i].toIeee());
+                os.println();
+            }
+            os.close();
+        } 
+        catch (FileNotFoundException e) {
+            System.out.println(e.toString());
         }
         catch(IOException e){
             System.out.println(e.toString());
-            System.exit(0);
+        }
+
+    }
+
+    public void printAcm(String fileName){
+        PrintWriter os = null;
+        try {
+            os = new PrintWriter(new FileWriter(fileName));
+            for(int i = 0; i < this.quantityOfArticles; i++){
+            os.println(articles[i].toAcm());
+            os.println();
+            } 
+        os.close();
+        }
+        catch (FileNotFoundException e) {
+			System.out.println(e.toString());
+        }
+        catch(IOException e){
+            System.out.println(e.toString());
+        }
+        }
+
+    public void printNj(String fileName){
+        PrintWriter os = null;
+        try
+        {
+            os = new PrintWriter(new FileWriter(fileName));
+            for(int i = 0; i < this.quantityOfArticles; i++){
+            os.println(articles[i].toNJ());
+            os.println();
+            }
+            os.close(); 
+        }
+        catch(FileNotFoundException e) {
+			System.out.println(e.toString());
+            }
+        catch(IOException e){
+            System.out.println(e.toString());
         }
     }
 

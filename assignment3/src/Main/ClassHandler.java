@@ -10,6 +10,9 @@ import java.io.FileOutputStream;
 public class ClassHandler {
     // attributes
     private String path;
+    private String ieee;
+    private String acm;
+    private String nj;
 
     // constructor
     public ClassHandler(String path) {
@@ -37,13 +40,13 @@ public class ClassHandler {
     }
 
     // read from file method
-    public boolean tryToOpenFile() {
+    public boolean processFilesForValidation() {
         Scanner inS = null;
         try {
             inS = new Scanner(new FileInputStream(this.getPath()));
         } catch (FileNotFoundException e) {
             System.out.print("Could not open input file " + this.getPath()
-                    + " for reading. \n\nPlease check if file exists! Program will terminate after closing any opened files.");
+                    + " for reading. \n\nPlease check if file exists! Program will terminate after closing any opened files.\n");
             System.exit(0);
             return false;
 
