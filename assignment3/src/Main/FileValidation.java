@@ -107,7 +107,7 @@ public class FileValidation {
     /**
      * returns specific article asked for by the user
      * 
-     * @param index
+     * @param index this is the position of the first character of the name of the article
      * @return Article
      */
     public Article getSpecificArticle(int index) {
@@ -306,7 +306,7 @@ public class FileValidation {
     /**
      * prints out bibliogrpahyin the ieee style to fa ile
      * 
-     * @param fileName
+     * @param fileName name of the file
      */
     public void printIeee(String fileName) {
         PrintWriter os = null;
